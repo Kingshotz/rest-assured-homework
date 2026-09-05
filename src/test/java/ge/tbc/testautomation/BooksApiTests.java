@@ -1,28 +1,29 @@
 package ge.tbc.testautomation;
 
 import ge.tbc.testautomation.data.BookDataProvider;
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.specification.RequestSpecification;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static ge.tbc.testautomation.data.Constants.BOOKS_PATH;
-import static ge.tbc.testautomation.data.Constants.BOOK_STORE_UI;
+import static ge.tbc.testautomation.data.Constants.BOOK_STORE_URI;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 public class BooksApiTests {
+    private RequestSpecification spec;
+
     @BeforeClass
     public void beforeClass() {
-        RestAssured.baseURI = BOOK_STORE_UI;
+        spec = new RequestSpecBuilder()
+                .setBaseUri(BOOK_STORE_URI)
+                .build();
     }
 
     @Test(dataProvider = "bookData", dataProviderClass = BookDataProvider.class)
     public void getSingleBook(String isbn, String author) {
-            given()
+            given(spec)
                     .when()
                     .basePath(BOOKS_PATH)
                     .queryParam("ISBN", isbn)
@@ -38,7 +39,7 @@ public class BooksApiTests {
     }
     @Test
     public void DeleteBookTest() {
-        given()
+        given(spec)
                 .when()
                 .basePath(BOOKS_PATH)
                 .delete("/Book")

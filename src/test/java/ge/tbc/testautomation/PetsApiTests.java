@@ -2,8 +2,10 @@ package ge.tbc.testautomation;
 
 import ge.tbc.testautomation.data.Constants;
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -19,11 +21,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class PetsApiTests {
+    private RequestSpecification spec;
     Random random;
 
     @BeforeClass
     public void beforeClass() {
-        RestAssured.baseURI = Constants.PET_STORE_API;
+        spec = new RequestSpecBuilder()
+                .setBaseUri(Constants.PET_STORE_URI)
+                .build();
         random = new Random();
     }
 
@@ -37,7 +42,7 @@ public class PetsApiTests {
         orderRequest.put("status", "placed");
         orderRequest.put("complete", random.nextBoolean());
 
-        given()
+        given(spec)
                 .basePath(Constants.PET_STORE_PATH)
                 .header("accept","application/json")
                 .contentType(ContentType.JSON)
@@ -61,7 +66,7 @@ public class PetsApiTests {
     public void PetPostTest() {
         int petId = 2 + random.nextInt(10);
 
-        given()
+        given(spec)
                 .basePath(Constants.PET_PATH)
                 .accept(ContentType.JSON)
                 .contentType(ContentType.URLENC)
@@ -79,14 +84,14 @@ public class PetsApiTests {
 
     @Test
     public void NotFoundPetPostTest() {
-        given()
+        given(spec)
                 .basePath(Constants.PET_PATH)
                 .accept(ContentType.JSON)
                 .contentType(ContentType.URLENC)
                 .formParam("name","doggie")
                 .formParam("status", "available")
                 .when()
-                .post("/{petId}", 1)
+                .post("/{petId}", 2000)
                 .then()
                 .statusCode(404)
                 .body("code", equalTo(404))
@@ -97,7 +102,7 @@ public class PetsApiTests {
 
     @Test
     public void UserLoginTest() {
-        Response response = given()
+        Response response = given(spec)
                 .basePath(Constants.PET_USER_PATH)
                 .accept(ContentType.JSON)
                 .queryParam("username", "username")

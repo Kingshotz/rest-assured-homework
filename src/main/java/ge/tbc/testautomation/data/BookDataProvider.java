@@ -7,7 +7,7 @@ import org.testng.annotations.DataProvider;
 import java.util.List;
 
 import static ge.tbc.testautomation.data.Constants.BOOKS_PATH;
-import static ge.tbc.testautomation.data.Constants.BOOK_STORE_UI;
+import static ge.tbc.testautomation.data.Constants.BOOK_STORE_URI;
 import static io.restassured.RestAssured.given;
 
 public class BookDataProvider {
@@ -15,7 +15,7 @@ public class BookDataProvider {
     @DataProvider(name = "bookData")
     public static Object[][] bookData() {
         Response response = given()
-                .baseUri(BOOK_STORE_UI)
+                .baseUri(BOOK_STORE_URI)
                 .basePath(BOOKS_PATH)
                 .when()
                 .get("/Books")

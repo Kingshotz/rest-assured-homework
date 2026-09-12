@@ -6,6 +6,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
+allure-results/
+allure-report/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

@@ -1,76 +1,58 @@
 package api.client;
 
-import data.Constants;
-import data.models.request.AuthenticateRequest;
-import data.models.request.CreateBookingRequest;
-import data.models.request.PartialUpdateRequest;
-import io.restassured.builder.RequestSpecBuilder;
+import data.models.request.booker.AuthRequest;
+import data.models.request.booker.BookingRequest;
+import data.models.response.booker.AuthResponse;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
+import static data.Constants.BOOKER_AUTH_PATH;
+import static data.Constants.BOOKER_BOOKING_PATH;
+import static data.Constants.BOOKER_URI;
 import static io.restassured.RestAssured.given;
 
-public class BookerApi {
-    private String token;
+public class BookerApi extends BaseApi {
 
-    private final RequestSpecification REQ_SPEC = new RequestSpecBuilder()
-            .setBaseUri(Constants.BOOKER_URI)
-            .addHeader("Content-Type", "application/json")
-            .addHeader("Accept", "application/json")
-            .build();
+    private final RequestSpecification reqSpec = specFor(BOOKER_URI);
 
-    public Response authenticate(AuthenticateRequest auth) {
+    public Response authenticate(AuthRequest request) {
         return given()
-                .spec(REQ_SPEC)
-                .body(auth)
+                .spec(reqSpec)
+                .body(request)
                 .when()
-                .post(Constants.BOOKER_AUTH_PATH);
+                .post(BOOKER_AUTH_PATH);
     }
 
-    public String getToken() {
-        if (token == null) {
-            AuthenticateRequest auth = new AuthenticateRequest();
-            auth.setUsername(Constants.USERNAME);
-            auth.setPassword(Constants.PASSWORD);
-
-            token = authenticate(auth)
-                    .then()
-                    .statusCode(200)
-                    .extract()
-                    .path("token");
-        }
-        return token;
+    public String createToken(AuthRequest request) {
+        return authenticate(request)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(AuthResponse.class)
+                .getToken();
     }
 
-    public Response createBooking(CreateBookingRequest createBookingRequest) {
+    public Response createBooking(BookingRequest request) {
         return given()
-                .spec(REQ_SPEC)
-                .body(createBookingRequest)
+                .spec(reqSpec)
+                .body(request)
                 .when()
-                .post(Constants.BOOKER_CREATE_PATH);
+                .post(BOOKER_BOOKING_PATH);
     }
 
     public Response getBooking(int id) {
         return given()
-                .spec(REQ_SPEC)
+                .spec(reqSpec)
                 .when()
-                .get(Constants.BOOKER_CREATE_PATH + "/{id}", id);
+                .get(BOOKER_BOOKING_PATH + "/{id}", id);
     }
 
-    public Response partialUpdateBooking(PartialUpdateRequest partialUpdateRequest, int id) {
+    public Response updateBooking(int id, BookingRequest request, String token) {
         return given()
-                .spec(REQ_SPEC)
-                .cookie("token", getToken())
-                .body(partialUpdateRequest)
+                .spec(reqSpec)
+                .cookie("token", token)
+                .body(request)
                 .when()
-                .patch(Constants.BOOKER_CREATE_PATH + "/{id}", id);
-    }
-
-    public Response deleteBooking(int id) {
-        return given()
-                .spec(REQ_SPEC)
-                .cookie("token", getToken())
-                .when()
-                .delete(Constants.BOOKER_CREATE_PATH + "/{id}", id);
+                .put(BOOKER_BOOKING_PATH + "/{id}", id);
     }
 }

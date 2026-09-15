@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
@@ -12,67 +14,260 @@
         <maven.compiler.source>26</maven.compiler.source>
         <maven.compiler.target>26</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Plugin versions -->
+        <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+        <openapi-generator-maven-plugin.version>7.25.0</openapi-generator-maven-plugin.version>
+
+        <!-- OpenAPI dependencies -->
+        <swagger-annotations.version>2.2.54</swagger-annotations.version>
+        <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
+        <jackson-databind-nullable.version>0.2.11</jackson-databind-nullable.version>
     </properties>
+
     <dependencies>
+
+        <!-- TestNG -->
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>7.11.0</version>
         </dependency>
+
+        <!-- Rest Assured -->
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>6.0.0</version>
         </dependency>
+
+        <!-- Java Faker -->
         <dependency>
             <groupId>com.github.javafaker</groupId>
             <artifactId>javafaker</artifactId>
             <version>1.0.2</version>
-            <scope>compile</scope>
         </dependency>
 
+        <!-- JSON -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20260814</version>
         </dependency>
+
+        <!-- Jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.17.2</version>
         </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>2.17.2</version>
         </dependency>
+
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.48</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
+
+        <!-- Allure -->
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-testng</artifactId>
             <version>2.29.0</version>
         </dependency>
+
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-rest-assured</artifactId>
             <version>2.29.0</version>
         </dependency>
+
+        <!-- ==================== -->
+        <!-- OpenAPI Dependencies -->
+        <!-- ==================== -->
+
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>${swagger-annotations.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>${jakarta.annotation-api.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+            <version>${jackson-databind-nullable.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
+            <!-- Maven Compiler -->
         <plugins>
+
+            <!-- Maven Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+
                 <configuration>
                     <proc>full</proc>
                 </configuration>
             </plugin>
+
+            <!-- Maven Surefire + Allure -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.4</version>
+
+                <configuration>
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>io.qameta.allure.testng.AllureTestNg</value>
+                        </property>
+                    </properties>
+                </configuration>
+            </plugin>
+
+
+            <!-- ============================ -->
+            <!-- OpenAPI Generator -->
+            <!-- ============================ -->
+
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${openapi-generator-maven-plugin.version}</version>
+
+                <executions>
+
+                    <!-- ================================= -->
+                    <!-- PETSTORE API -->
+                    <!-- ================================= -->
+
+                    <execution>
+                        <id>generate-pet-store-v3-client-api-code</id>
+
+                        <phase>generate-sources</phase>
+
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+
+                        <configuration>
+
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/openapi.yaml
+                            </inputSpec>
+
+                            <!-- Separate generated source directory -->
+                            <output>
+                                ${project.build.directory}/generated-sources/openapi/petstore
+                            </output>
+
+                            <invokerPackage>
+                                pet.store.v3.invoker
+                            </invokerPackage>
+
+                            <apiPackage>
+                                pet.store.v3.api
+                            </apiPackage>
+
+                            <modelPackage>
+                                pet.store.v3.model
+                            </modelPackage>
+
+                            <generatorName>java</generatorName>
+
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+
+                            <additionalProperties>
+                                hideGenerationTimestamp=true
+                            </additionalProperties>
+
+                            <configOptions>
+                                <library>rest-assured</library>
+                                <serializationLibrary>jackson</serializationLibrary>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
+
+                        </configuration>
+                    </execution>
+
+
+                    <!-- ================================= -->
+                    <!-- AUTH API -->
+                    <!-- ================================= -->
+
+                    <execution>
+                        <id>generate-auth-api-client</id>
+
+                        <phase>generate-sources</phase>
+
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+
+                        <configuration>
+
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/authapi.yaml
+                            </inputSpec>
+
+                            <!-- Separate generated source directory -->
+                            <output>
+                                ${project.build.directory}/generated-sources/openapi/auth
+                            </output>
+
+                            <invokerPackage>
+                                auth.api.invoker
+                            </invokerPackage>
+
+                            <apiPackage>
+                                auth.api.api
+                            </apiPackage>
+
+                            <modelPackage>
+                                auth.api.model
+                            </modelPackage>
+
+                            <generatorName>java</generatorName>
+
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+
+                            <additionalProperties>
+                                hideGenerationTimestamp=true
+                            </additionalProperties>
+
+                            <configOptions>
+                                <library>rest-assured</library>
+                                <serializationLibrary>jackson</serializationLibrary>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
+
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 

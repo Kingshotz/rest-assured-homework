@@ -30,5 +30,12 @@ public class AuthSteps {
                 .body(refreshTokenRequest)
                 .execute(response -> response);
     }
+    public Response authorize(String token){
+        return authApiAuthorized(token)
+                .authorization()
+                .sayHelloWithRoleAdminAndReadAuthority()
+                .execute(response -> response);
+    }
+
 
 }

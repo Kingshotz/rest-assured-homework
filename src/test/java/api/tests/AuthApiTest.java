@@ -17,6 +17,7 @@ import auth.api.model.RefreshTokenRequest;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
 @Epic("Authentication API")
 @Feature("Authentication")
@@ -51,15 +52,23 @@ public class AuthApiTest {
 
         assertThat(authResponse.getRoles(),hasItems(Constants.ROLES));
     }
-    @Story("Refresh Token")
+
     @Test(priority = 3)
+    public void checkAuthorization() {
+        authSteps.authorize(authResponse.getAccessToken());
+        Response res = authSteps.authorize(authResponse.getAccessToken());
+        res.then().statusCode(SC_OK);
+        assertThat(res.asString(), containsString("Hello"));
+    }
+
+    @Story("Refresh Token")
+    @Test(priority = 4)
     public void refreshToken(){
         RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest()
                 .refreshToken(authResponse.getRefreshToken());
         Response res = authSteps.refreshToken(authResponse.getAccessToken(),
                 refreshTokenRequest);
         res.then().statusCode(SC_OK);
-        authResponse = res.as(AuthenticationResponse.class);
+        System.out.println(res.asString());
     }
-
 }
